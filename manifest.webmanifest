@@ -1,15 +1,15 @@
 {
-  "name": "کدنویس | دفترچه کدنویسی اندروید",
-  "short_name": "کدنویس",
-  "description": "دفترچه قابل جستجو برای کدها، متن‌ها و نکته‌های اندروید",
+  "name": "نکسوریس | دفترچهٔ جامع و فضای کار",
+  "short_name": "نکسوریس",
+  "description": "یادداشت، کد، پروژه، سند و ایده برای همهٔ موضوعات با جست‌وجو و دسته‌بندی",
   "lang": "fa",
   "dir": "rtl",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#f4f7fb",
-  "theme_color": "#17224b",
+  "background_color": "#f7f6fb",
+  "theme_color": "#7861b5",
   "icons": [
     {
       "sizes": "192x192",
