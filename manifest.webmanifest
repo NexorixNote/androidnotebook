@@ -1,0 +1,27 @@
+{
+  "name": "کدنویس | دفترچه کدنویسی اندروید",
+  "short_name": "کدنویس",
+  "description": "دفترچه قابل جستجو برای کدها، متن‌ها و نکته‌های اندروید",
+  "lang": "fa",
+  "dir": "rtl",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f4f7fb",
+  "theme_color": "#17224b",
+  "icons": [
+    {
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable",
+      "src": "./icon-192.png"
+    },
+    {
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable",
+      "src": "./icon-512.png"
+    }
+  ]
+}
