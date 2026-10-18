@@ -388,7 +388,7 @@ if(storageReadError)setTimeout(()=>toast('ذخیرهٔ قبلی نیاز به ب
 
 function normalizePreferences(value){return {sort:['newest','oldest','title','domain'].includes(value?.sort)?value.sort:'newest'};}
 function normalizeArchivedDomains(value){return (Array.isArray(value)?value:[]).filter(x=>x?.id&&x.domain?.id&&x.domain?.name).map(x=>({id:String(x.id),domain:normalizeDomain(x.domain),targetId:String(x.targetId||''),deletedAt:String(x.deletedAt||''),folders:Array.isArray(x.folders)?x.folders.filter(f=>f&&typeof f.path==='string'):[]}));}
-function archivedDomainPanel(){return archivedDomains.length?`<section class="manager-panel"><div class="sectionhead"><h2>حوزه‌های حذف‌شده</h2><small>قابل بازیابی</small></div><div class="archive-domain-list">${archivedDomains.map(entry=>`<article><div><strong>${esc(entry.domain.name)}</strong><small>یادداشت‌ها در ${esc(domains.find(d=>d.id===entry.targetId)?.name||'حوزهٔ مقصد')} نگه‌داری می‌شوند.</small></div><button class="btn small" data-action="restore-domain" data-id="${esc(entry.id)}">${icon('restore','sm')}بازیابی حوزه</button></article>`).join('')}</div></section>`:'';}
+function archivedDomainPanel(){return archivedDomains.length?`<section class="manager-panel"><div class="sectionhead"><h2>حوزه‌های حذف‌شده</h2><small>قابل بازیابی</small></div><div class="archive-domain-list">${archivedDomains.map(entry=>`<article><div><strong>${esc(entry.domain.name)}</strong><small>یادداشت‌ها در ${esc(domains.find(d=>d.id===entry.targetId)?.name||'حوزهٔ مقصد')} نگه‌داری می‌شوند.</small></div><div class="archive-actions"><button class="btn small" data-action="restore-domain" data-id="${esc(entry.id)}">${icon('restore','sm')}بازیابی حوزه</button><button class="btn small danger-btn" data-action="permanent-delete-domain" data-id="${esc(entry.id)}">${icon('trash','sm')}حذف دائمی</button></div></article>`).join('')}</div></section>`:'';}
 function openDeleteDomain(id){
  const domain=domains.find(d=>d.id===id),targets=domains.filter(d=>d.id!==id);if(!domain)return;
  if(!targets.length){toast('حداقل یک حوزه باید باقی بماند؛ ابتدا یک حوزهٔ دیگر بسازید.');return;}
@@ -399,7 +399,7 @@ function archiveDomain(id,targetId){
  const domain=domains.find(d=>d.id===id);if(!domain||domains.length<2||id===targetId||!domains.some(d=>d.id===targetId))return false;
  const entry={id:uid(),domain:cloneState(domain),targetId,deletedAt:new Date().toISOString(),folders:cloneState(folders.filter(f=>f.domain===id))};
  records.forEach(r=>{if(r.domain===id){r.domain=targetId;r.domainTransfer=entry.id;}});
- folders.forEach(f=>{if(f.domain===id)f.domain=targetId;});
+ folders.forEach(f=>{if(f.domain===id){f.domain=targetId;f.domainTransfer=entry.id;}});
  folders=[...new Map(folders.map(f=>[f.domain+'::'+f.path,f])).values()];
  domains=domains.filter(d=>d.id!==id);archivedDomains.unshift(entry);
  return store();
@@ -408,8 +408,20 @@ function restoreDomain(entryId){
  const entry=archivedDomains.find(x=>x.id===entryId);if(!entry||domains.some(d=>d.id===entry.domain.id))return false;
  domains.push(cloneState(entry.domain));
  records.forEach(r=>{if(r.domainTransfer===entryId&&r.domain===entry.targetId){r.domain=entry.domain.id;delete r.domainTransfer;}});
+ folders.forEach(f=>{if(f.domainTransfer===entryId&&f.domain===entry.targetId){f.domain=entry.domain.id;delete f.domainTransfer;}});
  const known=new Set(folders.map(f=>f.domain+'::'+f.path));
  entry.folders.forEach(f=>{if(!known.has(entry.domain.id+'::'+f.path))folders.push({...f,domain:entry.domain.id});});
+ archivedDomains=archivedDomains.filter(x=>x.id!==entryId);
+ return store();
+}
+function permanentlyDeleteDomain(entryId){
+ const entry=archivedDomains.find(x=>x.id===entryId);if(!entry)return false;
+ const affected=records.filter(r=>r.domainTransfer===entryId&&r.domain===entry.targetId);
+ const message='حوزهٔ «'+entry.domain.name+'» و '+fa(affected.length)+' یادداشت منتقل‌شده برای همیشه حذف می‌شوند. این کار قابل بازگشت نیست. ادامه می‌دهید؟';
+ if(typeof window.confirm==='function'&&!window.confirm(message))return false;
+ records=records.filter(r=>!(r.domainTransfer===entryId&&r.domain===entry.targetId));
+ const paths=new Set(entry.folders.map(f=>f.path));
+ folders=folders.filter(f=>{if(f.domainTransfer===entryId)return false;if(f.domain===entry.targetId&&paths.has(f.path))return records.some(r=>r.domain===entry.targetId&&r.folder===f.path||r.domain===entry.targetId&&String(r.folder).startsWith(f.path+' / '));return true;});
  archivedDomains=archivedDomains.filter(x=>x.id!==entryId);
  return store();
 }
@@ -448,11 +460,12 @@ function showHistory(id){const r=records.find(r=>r.id===id);if(!r)return;const h
 function previewRevision(id,revisionId){const r=records.find(r=>r.id===id),v=normalizedHistory(r?.history).find(x=>x.id===revisionId);if(!v)return;openModal(`${modalHead('نسخهٔ قبلی: '+esc(v.snapshot.title))}<small class="muted">${esc(revisionDate(v.savedAt))}</small><div class="detail-body">${esc(v.snapshot.note)}</div>${v.snapshot.code?`<pre class="code-block">${esc(v.snapshot.code)}</pre>`:''}<div class="dialog-actions"><button class="btn" data-action="history" data-id="${esc(id)}">بازگشت به تاریخچه</button>${r.deleted?'':`<button class="btn primary" data-action="restore-revision" data-id="${esc(id)}" data-revision="${esc(revisionId)}">بازگردانی این نسخه</button>`}</div>`);}
 function restoreRevision(id,revisionId){const r=records.find(r=>r.id===id),v=normalizedHistory(r?.history).find(x=>x.id===revisionId);if(!r||r.deleted||!v)return false;const history=historyWithSnapshot(r,'پیش از بازیابی نسخه'),domain=domains.some(d=>d.id===v.snapshot.domain)?v.snapshot.domain:r.domain,type=typeNames[v.snapshot.type]?v.snapshot.type:r.type,status=statuses[v.snapshot.status]?v.snapshot.status:r.status;Object.assign(r,v.snapshot,{domain,type,status,history,updatedAt:new Date().toISOString()});delete r.domainTransfer;return store();}
 function duplicateNote(id){const r=records.find(r=>r.id===id);if(!r||r.deleted)return false;const copy={...cloneState(r),id:uid(),title:r.title+' (کپی)',date:today(),updatedAt:new Date().toISOString(),star:false,history:[]};delete copy.domainTransfer;records.unshift(copy);return store();}
-const advancedActions=['delete-domain','restore-domain','select-results','clear-selection','bulk-move','bulk-status','bulk-star','bulk-delete','bulk-restore','history','preview-revision','restore-revision','duplicate-note'];
+const advancedActions=['delete-domain','restore-domain','permanent-delete-domain','select-results','clear-selection','bulk-move','bulk-status','bulk-star','bulk-delete','bulk-restore','history','preview-revision','restore-revision','duplicate-note'];
 function advancedClick(action,data){
  switch(action){
  case 'delete-domain':return openDeleteDomain(data.id);
  case 'restore-domain':if(restoreDomain(data.id)){resetFilters();activeSection='folders';render();toast('حوزه بازیابی شد.');}return;
+ case 'permanent-delete-domain':if(permanentlyDeleteDomain(data.id)){resetFilters();activeSection='folders';render();toast('حوزه و محتوای منتقل‌شده برای همیشه حذف شد.');}return;
  case 'select-results':filtered().forEach(r=>selectedIds.add(r.id));refreshRecords();return;
  case 'clear-selection':selectedIds.clear();refreshRecords();return;
  case 'bulk-move':return openBulkAction('move');
