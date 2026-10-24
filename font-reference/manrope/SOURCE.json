@@ -1,0 +1,23 @@
+{
+  "family": "Manrope",
+  "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/manrope/Manrope%5Bwght%5D.ttf",
+  "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/manrope/OFL.txt",
+  "source_sha256": "3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6",
+  "static_files": [
+    {
+      "file": "Manrope-Regular.ttf",
+      "weight": 400,
+      "sha256": "bb1a1f5b57b3588970d4db12aa21615d00d975aef900b3dc6ddf503757281be0"
+    },
+    {
+      "file": "Manrope-SemiBold.ttf",
+      "weight": 600,
+      "sha256": "af136aa6e322bb3213e733d4439d0e2a3732bb6f1cae29892b109eb2022b9611"
+    },
+    {
+      "file": "Manrope-Bold.ttf",
+      "weight": 700,
+      "sha256": "49793bf51e5f92e7200e0afe88265ff6a990dd324a5bd86dcf60193dcdc2cbd8"
+    }
+  ]
+}
