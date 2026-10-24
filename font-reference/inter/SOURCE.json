@@ -1,0 +1,23 @@
+{
+  "family": "Inter",
+  "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/inter/Inter%5Bopsz%2Cwght%5D.ttf",
+  "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/inter/OFL.txt",
+  "source_sha256": "29160a80ff49ddcab2c97711247e08b1fab27a484a329ce8b813d820dc559031",
+  "static_files": [
+    {
+      "file": "Inter-Regular.ttf",
+      "weight": 400,
+      "sha256": "70bc31b73fe7e5184c81b1a2526b920607fce17789789512e3621edec0825bb0"
+    },
+    {
+      "file": "Inter-SemiBold.ttf",
+      "weight": 600,
+      "sha256": "7872f16e64385b484a9126ce4e115eb82c9bb758907772bda8a751554227c506"
+    },
+    {
+      "file": "Inter-Bold.ttf",
+      "weight": 700,
+      "sha256": "385ce604cdad291b757073bbe122273e601540f5500fdca371b3bb986c4a06b3"
+    }
+  ]
+}
