@@ -1,0 +1,23 @@
+{
+  "family": "Source Sans 3",
+  "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/sourcesans3/SourceSans3%5Bwght%5D.ttf",
+  "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/sourcesans3/OFL.txt",
+  "source_sha256": "042fe2cc0b933e328410d7acbd0aa6a1873dca5aef81875f4bc214b08825c7b9",
+  "static_files": [
+    {
+      "file": "SourceSans3-Regular.ttf",
+      "weight": 400,
+      "sha256": "79e52af747b51be628518888b805659c36b7cbe7da2cb6da409d38107427004e"
+    },
+    {
+      "file": "SourceSans3-SemiBold.ttf",
+      "weight": 600,
+      "sha256": "5f1c80a553e8bd82f3cf0e547771e3c905aa7f7a080f79efc68606463560b06a"
+    },
+    {
+      "file": "SourceSans3-Bold.ttf",
+      "weight": 700,
+      "sha256": "5a260c602607631631d7faa35823fbb26e6ecb52383ce52d50b32d367afdc90e"
+    }
+  ]
+}
