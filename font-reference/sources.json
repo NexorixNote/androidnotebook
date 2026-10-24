@@ -1,0 +1,94 @@
+[
+  {
+    "family": "Inter",
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/inter/Inter%5Bopsz%2Cwght%5D.ttf",
+    "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/inter/OFL.txt",
+    "source_sha256": "29160a80ff49ddcab2c97711247e08b1fab27a484a329ce8b813d820dc559031",
+    "static_files": [
+      {
+        "file": "Inter-Regular.ttf",
+        "weight": 400,
+        "sha256": "70bc31b73fe7e5184c81b1a2526b920607fce17789789512e3621edec0825bb0"
+      },
+      {
+        "file": "Inter-SemiBold.ttf",
+        "weight": 600,
+        "sha256": "7872f16e64385b484a9126ce4e115eb82c9bb758907772bda8a751554227c506"
+      },
+      {
+        "file": "Inter-Bold.ttf",
+        "weight": 700,
+        "sha256": "385ce604cdad291b757073bbe122273e601540f5500fdca371b3bb986c4a06b3"
+      }
+    ]
+  },
+  {
+    "family": "Manrope",
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/manrope/Manrope%5Bwght%5D.ttf",
+    "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/manrope/OFL.txt",
+    "source_sha256": "3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6",
+    "static_files": [
+      {
+        "file": "Manrope-Regular.ttf",
+        "weight": 400,
+        "sha256": "bb1a1f5b57b3588970d4db12aa21615d00d975aef900b3dc6ddf503757281be0"
+      },
+      {
+        "file": "Manrope-SemiBold.ttf",
+        "weight": 600,
+        "sha256": "af136aa6e322bb3213e733d4439d0e2a3732bb6f1cae29892b109eb2022b9611"
+      },
+      {
+        "file": "Manrope-Bold.ttf",
+        "weight": 700,
+        "sha256": "49793bf51e5f92e7200e0afe88265ff6a990dd324a5bd86dcf60193dcdc2cbd8"
+      }
+    ]
+  },
+  {
+    "family": "Source Sans 3",
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/sourcesans3/SourceSans3%5Bwght%5D.ttf",
+    "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/sourcesans3/OFL.txt",
+    "source_sha256": "042fe2cc0b933e328410d7acbd0aa6a1873dca5aef81875f4bc214b08825c7b9",
+    "static_files": [
+      {
+        "file": "SourceSans3-Regular.ttf",
+        "weight": 400,
+        "sha256": "79e52af747b51be628518888b805659c36b7cbe7da2cb6da409d38107427004e"
+      },
+      {
+        "file": "SourceSans3-SemiBold.ttf",
+        "weight": 600,
+        "sha256": "5f1c80a553e8bd82f3cf0e547771e3c905aa7f7a080f79efc68606463560b06a"
+      },
+      {
+        "file": "SourceSans3-Bold.ttf",
+        "weight": 700,
+        "sha256": "5a260c602607631631d7faa35823fbb26e6ecb52383ce52d50b32d367afdc90e"
+      }
+    ]
+  },
+  {
+    "family": "DM Sans",
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/dmsans/DMSans%5Bopsz%2Cwght%5D.ttf",
+    "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/dmsans/OFL.txt",
+    "source_sha256": "8cd08d97e89c24d0aa92edd2f0f4c8ee6195eee9b7c9f154865a58b02f0c1c0d",
+    "static_files": [
+      {
+        "file": "DMSans-Regular.ttf",
+        "weight": 400,
+        "sha256": "a1ecafd146e98ef0dd8fef454000c08195b7e87f4e0e72a6a78d6d263f40bd19"
+      },
+      {
+        "file": "DMSans-SemiBold.ttf",
+        "weight": 600,
+        "sha256": "4a9a618ff44f8da59e84a55650d0f956983ffa00ac01ff1652b1f3a5ea52026b"
+      },
+      {
+        "file": "DMSans-Bold.ttf",
+        "weight": 700,
+        "sha256": "c366eb5368d461adb1c137491ba278a69d800832debe2e7784700ac5a79e4946"
+      }
+    ]
+  }
+]
