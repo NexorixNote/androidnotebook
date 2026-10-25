@@ -1,0 +1,71 @@
+{
+  "report_id": "project-022-complete-workflow",
+  "title": "روش کامل پروژهٔ ۰۲۲ — پیش‌نمایش تعاملی تا نصب و آزمون گوشی",
+  "date": "2026-10-25",
+  "language": "fa",
+  "tags": [
+    "پروژه 022",
+    "روش کار",
+    "پیش‌نمایش تعاملی",
+    "بدون کامپایل پیش‌نمایش",
+    "Android",
+    "APK",
+    "ADB",
+    "تست گوشی",
+    "Visualize",
+    "Manrope",
+    "چک‌لیست انتشار"
+  ],
+  "latest_revision": 65,
+  "release_ready": false,
+  "apk_sha256_reference": "24d44a29919c6fc3b1cf5c3506c3c556208d7c971e470b920eacedf217b00645",
+  "apk_included": false,
+  "credentials_included": false,
+  "evidence": [
+    {
+      "file": "evidence/actual-settings-manrope-62.png",
+      "caption": "Actual phone capture: selected Manrope and unified Settings frame."
+    },
+    {
+      "file": "evidence/actual-sort-mycolor-63.png",
+      "caption": "Actual phone capture: complete sort option frames."
+    },
+    {
+      "file": "evidence/actual-landscape-64.png",
+      "caption": "Actual phone capture: enlarged drawing viewport with sidebar."
+    },
+    {
+      "file": "evidence/actual-portrait-65.png",
+      "caption": "Actual phone capture: reopened portrait drawing on revision 65, not a continuous rotation recording."
+    },
+    {
+      "file": "evidence/preview-four-fonts.png",
+      "caption": "Rendered font comparison; this is a browser sample, not a phone screenshot."
+    }
+  ],
+  "project_reference_files": [
+    "build_home_native.ps1",
+    "package_motion_selections_43.ps1",
+    "align_apk_16k.py",
+    "device_capture.py",
+    "home_device_check.py",
+    "update_game_and_capture.py",
+    "check_viewport_64.py",
+    "package_formal_fonts_four.mjs",
+    "qa_formal_fonts_four.mjs",
+    "home-native-62-notes.md",
+    "home-native-63-notes.md",
+    "home-native-64-notes.md",
+    "home-native-65-notes.md",
+    "release-review-2026-10-24.md",
+    "album-actions-65-apk-audit.json",
+    "formal-fonts-and-settings-depth-selection.md",
+    "luma-fonts-reference-complete.zip"
+  ],
+  "interactive_preview_files": [
+    "luma-formal-fonts-four.html",
+    "luma-settings-depth-three.html",
+    "luma-artwork-refinement.html",
+    "luma-motion-review.html"
+  ]
+}

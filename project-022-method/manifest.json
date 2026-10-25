@@ -1,0 +1,54 @@
+{
+  "files": [
+    {
+      "path": "evidence/actual-landscape-64.png",
+      "bytes": 373672,
+      "sha256": "b4afe503aff5b53a7b2a71cf78745d93e98bf3dd8d77d870445fb8312186450d"
+    },
+    {
+      "path": "evidence/actual-portrait-65.png",
+      "bytes": 574938,
+      "sha256": "a3c9ba1e0b049030d77739d37dda4cf884b7415e7b2c43f45b416c85c37828b3"
+    },
+    {
+      "path": "evidence/actual-settings-manrope-62.png",
+      "bytes": 147405,
+      "sha256": "17e66299f688762b09ef0282069808449aaf6dbfa5eb47e32d3a5775f9337c78"
+    },
+    {
+      "path": "evidence/actual-sort-mycolor-63.png",
+      "bytes": 604648,
+      "sha256": "d776a953a94ea44e0969ec8302514286efe1d2675461ddef5329f0721781a15b"
+    },
+    {
+      "path": "evidence/preview-four-fonts.png",
+      "bytes": 200623,
+      "sha256": "33c5a6cacdf7538c7fa9b007c7c04a055a9c20359c3f77ee5d0d09ea52e7e2f8"
+    },
+    {
+      "path": "future-project-prompt-fa.txt",
+      "bytes": 4397,
+      "sha256": "a3af1b74726f1878e997859ffc4ce829222ced97c52fe53fc0860aceec1b2b95"
+    },
+    {
+      "path": "project-022-workflow-fa.md",
+      "bytes": 32759,
+      "sha256": "69bc5250e186c538b596822e2168d026c600cfb3276ce7fbb05a07fd798febb4"
+    },
+    {
+      "path": "README-fa.md",
+      "bytes": 1180,
+      "sha256": "d556a807d8c6e62c4ba5aedad6e26ac3a10e1a536ece2294efa083cd3e1981a8"
+    },
+    {
+      "path": "references.json",
+      "bytes": 2345,
+      "sha256": "9ed835cbda66a0365582f820f5c8ea89ade4666d490cdee0dbc97d08a4f89b13"
+    },
+    {
+      "path": "workflow-checklist-fa.md",
+      "bytes": 4384,
+      "sha256": "3480499d1cbece56f10d9e6752f49a6ade52872a997512f02429b7387d8ecd50"
+    }
+  ]
+}
