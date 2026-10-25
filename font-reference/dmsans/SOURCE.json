@@ -1,0 +1,23 @@
+{
+  "family": "DM Sans",
+  "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/dmsans/DMSans%5Bopsz%2Cwght%5D.ttf",
+  "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/dmsans/OFL.txt",
+  "source_sha256": "8cd08d97e89c24d0aa92edd2f0f4c8ee6195eee9b7c9f154865a58b02f0c1c0d",
+  "static_files": [
+    {
+      "file": "DMSans-Regular.ttf",
+      "weight": 400,
+      "sha256": "a1ecafd146e98ef0dd8fef454000c08195b7e87f4e0e72a6a78d6d263f40bd19"
+    },
+    {
+      "file": "DMSans-SemiBold.ttf",
+      "weight": 600,
+      "sha256": "4a9a618ff44f8da59e84a55650d0f956983ffa00ac01ff1652b1f3a5ea52026b"
+    },
+    {
+      "file": "DMSans-Bold.ttf",
+      "weight": 700,
+      "sha256": "c366eb5368d461adb1c137491ba278a69d800832debe2e7784700ac5a79e4946"
+    }
+  ]
+}
