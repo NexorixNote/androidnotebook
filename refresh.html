@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#7861b5">
+  <title>به‌روزرسانی دفترچهٔ Nexorix</title>
+  <style>
+    *{box-sizing:border-box}
+    body{min-height:100vh;margin:0;display:grid;place-items:center;background:#f7f6fb;color:#1c2548;font-family:Tahoma,Arial,sans-serif}
+    main{width:min(92vw,460px);padding:32px;border:1px solid #e6e3f1;border-radius:18px;background:#fff;box-shadow:0 12px 36px #2323440d;text-align:center}
+    h1{margin:0 0 16px;font-size:24px}
+    p{line-height:1.9;color:#69728b}
+    button{padding:11px 22px;border:0;border-radius:10px;background:#7861b5;color:#fff;font:inherit;cursor:pointer}
+    button[hidden]{display:none}
+  </style>
+</head>
+<body>
+  <main>
+    <h1>به‌روزرسانی دفترچه</h1>
+    <p id="status">در حال دریافت نسخهٔ تازه…</p>
+    <button id="retry" hidden>تلاش دوباره</button>
+  </main>
+  <script>
+    const statusNode=document.getElementById('status');
+    const retryButton=document.getElementById('retry');
+    const scope=new URL('./',location.href).href;
+    async function refreshNotebook(){
+      retryButton.hidden=true;
+      statusNode.textContent='در حال تازه‌کردن فایل‌های دفترچه…';
+      if('serviceWorker' in navigator){
+        const registrations=await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.filter(registration=>registration.scope===scope).map(registration=>registration.unregister()));
+      }
+      if('caches' in window){
+        const names=await caches.keys();
+        await Promise.all(names.filter(name=>name.startsWith('nexorix-notebook-')||name.startsWith('kodnevis-pwa-')).map(name=>caches.delete(name)));
+      }
+      statusNode.textContent='نسخهٔ تازه آماده است. در حال باز کردن دفترچه…';
+      location.replace(new URL('index.html?updated=20261112-2',scope).href);
+    }
+    retryButton.addEventListener('click',()=>{refreshNotebook().catch(showError);});
+    function showError(){statusNode.textContent='به‌روزرسانی کامل نشد. اتصال اینترنت را بررسی کنید و دوباره تلاش کنید.';retryButton.hidden=false;}
+    refreshNotebook().catch(showError);
+  </script>
+</body>
+</html>
