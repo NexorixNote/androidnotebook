@@ -75,7 +75,7 @@ const domainDefaults=[
 const typeNames={note:'یادداشت',code:'قطعه‌کد',task:'کار و برنامه',document:'سند',link:'لینک',idea:'ایده',bug:'رفع خطا'};
 const statuses={todo:'برای بررسی',doing:'در حال انجام',done:'تکمیل شده'};
 const key='kodnevis_android_notes_cloud_v1',metaKey='nexorix_workspace_meta_v1';
-let preferences,archivedDomains,profile,domains,records,folders,projects=[],lastCommitted,storageReadError=false,pendingImport=null,installPrompt=null;
+let preferences,archivedDomains,profile,domains,records,folders,projects=[],purgedIds=new Set(),pendingPurgeIds=[],lastCommitted,storageReadError=false,pendingImport=null,installPrompt=null;
 loadProductionState();
 let activeDomain='all',activeSection='all',query='',typeFilter='all',projectFilter='all',activeFolder='',page=1,pageSize=preferences.pageSize;
 let display='table';
@@ -211,17 +211,18 @@ function normalizeProductionRecord(r){
  const legacy=!r.domain;
  return {...r,id:String(r.id||uid()),title:String(r.title||'بدون عنوان'),domain:domains.some(d=>d.id===r.domain)?r.domain:domains[0].id,folder:String(r.folder||(legacy?'اندروید / ':'')+(r.category||'عمومی')),project:String(r.project||''),category:String(r.category||''),type:typeNames[r.type]?r.type:'note',date:/^\d{4}-\d{2}-\d{2}$/.test(String(r.date))?r.date:today(),note:String(r.note||''),code:String(r.code||''),language:String(r.language||''),tags:Array.isArray(r.tags)?r.tags.join(', '):String(r.tags||''),status:statuses[r.status]?r.status:'todo',star:!!r.star,deleted:!!r.deleted,image:typeof r.image==='string'?r.image:'',url:typeof r.url==='string'?r.url:'',sample:false,...(r.history?{history:normalizedHistory(r.history)}:{})};
 }
-function packState(){return {format:'nexorix-notebook',version:2,exportedAt:new Date().toISOString(),domains,folders,projects,profile,preferences,archivedDomains,records};}
-function restoreMemory(state){domains=cloneState(state.domains);folders=cloneState(state.folders||[]);projects=cloneState(state.projects||[]);records=cloneState(state.records);profile=normalizeProfile(state.profile);preferences=normalizePreferences(state.preferences);pageSize=preferences.pageSize;archivedDomains=normalizeArchivedDomains(state.archivedDomains);}
+function normalizePurgedIds(value){return [...new Set((Array.isArray(value)?value:[]).filter(id=>typeof id==="string"&&id.length>0&&id.length<200))].slice(0,10000);}
+function packState(){return {format:'nexorix-notebook',version:2,exportedAt:new Date().toISOString(),domains,folders,projects,profile,preferences,archivedDomains,purgedIds:[...purgedIds],records};}
+function restoreMemory(state){domains=cloneState(state.domains);folders=cloneState(state.folders||[]);projects=cloneState(state.projects||[]);records=cloneState(state.records);profile=normalizeProfile(state.profile);preferences=normalizePreferences(state.preferences);pageSize=preferences.pageSize;archivedDomains=normalizeArchivedDomains(state.archivedDomains);purgedIds=new Set(normalizePurgedIds(state.purgedIds));}
 function loadProductionState(){
  let meta=null,rawRecords=null;
  try{meta=JSON.parse(localStorage.getItem(metaKey)||'null');}catch{}
- profile=normalizeProfile(meta?.profile);preferences=normalizePreferences(meta?.preferences);archivedDomains=normalizeArchivedDomains(meta?.archivedDomains);
+ profile=normalizeProfile(meta?.profile);preferences=normalizePreferences(meta?.preferences);archivedDomains=normalizeArchivedDomains(meta?.archivedDomains);purgedIds=new Set(normalizePurgedIds(meta?.purgedIds));
  domains=Array.isArray(meta?.domains)&&meta.domains.length?meta.domains.map(normalizeDomain):cloneState(domainDefaults);
  folders=Array.isArray(meta?.folders)?meta.folders.filter(f=>f&&typeof f.path==='string').map(f=>({...f,path:f.path,domain:domains.some(d=>d.id===f.domain)?f.domain:domains[0].id})):[];
  projects=Array.isArray(meta?.projects)?meta.projects.filter(p=>p&&typeof p.name==='string'):[];
  try{const raw=localStorage.getItem(key);if(raw!==null){rawRecords=JSON.parse(raw);if(!Array.isArray(rawRecords)||rawRecords.some(r=>!r||typeof r!=='object'))throw Error('format');}}catch{storageReadError=true;}
- records=(Array.isArray(rawRecords)?[...rawRecords,...cloneState(window.NOTEBOOK_SEED).filter(seed=>!rawRecords.some(r=>r&&r.id===seed.id))]:cloneState(window.NOTEBOOK_SEED)).map(normalizeProductionRecord).filter(Boolean);
+ records=(Array.isArray(rawRecords)?[...rawRecords,...cloneState(window.NOTEBOOK_SEED).filter(seed=>!rawRecords.some(r=>r&&r.id===seed.id))]:cloneState(window.NOTEBOOK_SEED)).filter(r=>!purgedIds.has(String(r.id))).map(normalizeProductionRecord).filter(Boolean);
  lastCommitted=cloneState(packState());
 }
 function store(){
@@ -229,7 +230,7 @@ function store(){
  let previousRecords=null,previousMeta=null,wroteRecords=false,wroteMeta=false;
  try{
    previousRecords=localStorage.getItem(key);previousMeta=localStorage.getItem(metaKey);
-   const recordJSON=JSON.stringify(records),metaJSON=JSON.stringify({version:2,domains,folders,projects,profile,preferences,archivedDomains});
+   const recordJSON=JSON.stringify(records),metaJSON=JSON.stringify({version:2,domains,folders,projects,profile,preferences,archivedDomains,purgedIds:[...purgedIds]});
    localStorage.setItem(key,recordJSON);wroteRecords=true;
    localStorage.setItem(metaKey,metaJSON);wroteMeta=true;
    lastCommitted=cloneState(packState());return true;
@@ -264,7 +265,7 @@ function prepareImport(payload){
  const known=new Set(records.map(r=>r.id));
  pendingImport={payload,list,domains:incomingDomains};
  const conflicts=list.filter(r=>r.id&&known.has(String(r.id))).length;
- openModal(`${modalHead('بررسی فایل پشتیبان')}<div class="import-summary"><strong>${fa(list.length)} یادداشت در فایل</strong><p>${fa(conflicts)} یادداشت با شناسهٔ موجود · ${fa(list.length-conflicts)} یادداشت تازه</p></div><label class="import-option"><input type="radio" name="import-mode" value="update" checked>ادغام و به‌روزکردن یادداشت‌های هم‌شناسه از روی فایل</label><label class="import-option"><input type="radio" name="import-mode" value="add">فقط افزودن یادداشت‌های تازه</label><label class="import-option"><input type="checkbox" id="backup-before-import" checked>ابتدا پشتیبان وضعیت فعلی دریافت شود</label>${payload?.profile?'<label class="import-option"><input type="checkbox" id="import-profile" checked>بازیابی پروفایل و نام فضای شخصی از فایل</label>':''}<div class="dialog-actions"><small>یادداشت‌هایی که در فایل نیستند حفظ می‌شوند.</small><button class="btn primary" data-action="apply-import">ورود اطلاعات</button></div>`,true);
+ openModal(`${modalHead('بررسی فایل پشتیبان')}<div class="import-summary"><strong>${fa(list.length)} یادداشت در فایل</strong><p>${fa(conflicts)} یادداشت با شناسهٔ موجود · ${fa(list.length-conflicts)} یادداشت تازه</p></div><label class="import-option"><input type="radio" name="import-mode" value="update" checked>ادغام و به‌روزکردن یادداشت‌های هم‌شناسه از روی فایل</label><label class="import-option"><input type="radio" name="import-mode" value="add">فقط افزودن یادداشت‌های تازه</label><label class="import-option"><input type="checkbox" id="backup-before-import" checked>ابتدا پشتیبان وضعیت فعلی دریافت شود</label>${payload?.profile?'<label class="import-option"><input type="checkbox" id="import-profile" checked>بازیابی پروفایل و نام فضای شخصی از فایل</label>':''}<div class="dialog-actions"><small>${normalizePurgedIds(payload?.purgedIds).length?'در حالت ادغام، حذف‌های ثبت‌شده در فایل نیز اعمال می‌شوند.':'یادداشت‌هایی که در فایل نیستند حفظ می‌شوند.'}</small><button class="btn primary" data-action="apply-import">ورود اطلاعات</button></div>`,true);
 }
 function applyImport(){
  if(!pendingImport)return;
@@ -275,7 +276,9 @@ function applyImport(){
   const dmap=new Map(domains.map(d=>[d.id,d]));incoming.domains.forEach(d=>{if(!dmap.has(d.id))dmap.set(d.id,d);});domains=[...dmap.values()];
   const byId=new Map(records.map(r=>[r.id,r]));let added=0,updated=0;
   incoming.list.forEach(raw=>{const r=normalizeProductionRecord(raw);if(byId.has(r.id)){if(mode==='update'){byId.set(r.id,{...byId.get(r.id),...r});updated++;}}else{byId.set(r.id,r);added++;}});
-  records=[...byId.values()];
+  incoming.list.forEach(raw=>purgedIds.delete(String(raw.id||"")));
+  if(mode==="update")normalizePurgedIds(incoming.payload.purgedIds).forEach(id=>{purgedIds.add(id);byId.delete(id);});
+  records=[...byId.values()].filter(r=>!purgedIds.has(r.id));
   if(Array.isArray(incoming.payload.folders)){const paths=new Map(folders.map(f=>[f.domain+'::'+f.path,f]));incoming.payload.folders.filter(f=>f&&typeof f.path==='string').forEach(f=>{const domain=domains.some(d=>d.id===f.domain)?f.domain:domains[0].id;paths.set(domain+'::'+f.path,{id:String(f.id||uid()),domain,path:f.path});});folders=[...paths.values()];}
   if(Array.isArray(incoming.payload.projects)){const names=new Map(projects.map(p=>[p.name,p]));incoming.payload.projects.filter(p=>p&&typeof p.name==='string').forEach(p=>names.set(p.name,{id:String(p.id||uid()),name:p.name}));projects=[...names.values()];}
   if(restoreProfile&&incoming.payload.profile)profile=normalizeProfile(incoming.payload.profile);
@@ -420,6 +423,7 @@ function permanentlyDeleteDomain(entryId){
  const affected=records.filter(r=>r.domainTransfer===entryId&&r.domain===entry.targetId);
  const message='حوزهٔ «'+entry.domain.name+'» و '+fa(affected.length)+' یادداشت منتقل‌شده برای همیشه حذف می‌شوند. این کار قابل بازگشت نیست. ادامه می‌دهید؟';
  if(typeof window.confirm==='function'&&!window.confirm(message))return false;
+ affected.forEach(r=>purgedIds.add(r.id));
  records=records.filter(r=>!(r.domainTransfer===entryId&&r.domain===entry.targetId));
  const paths=new Set(entry.folders.map(f=>f.path));
  folders=folders.filter(f=>{if(f.domainTransfer===entryId)return false;if(f.domain===entry.targetId&&paths.has(f.path))return records.some(r=>r.domain===entry.targetId&&r.folder===f.path||r.domain===entry.targetId&&String(r.folder).startsWith(f.path+' / '));return true;});
@@ -430,7 +434,7 @@ function compareNotes(a,b){switch(preferences.sort){case 'oldest':return noteTim
 function sortSelect(){return `<select id="sortFilter" aria-label="مرتب‌سازی یادداشت‌ها">${[['newest','تازه‌ترین ویرایش'],['oldest','قدیمی‌ترین'],['title','عنوان الفبایی'],['domain','بر اساس حوزه']].map(([value,label])=>`<option value="${value}" ${preferences.sort===value?'selected':''}>${label}</option>`).join('')}</select>`;}
 function selectionCheckbox(r){return `<label class="select-note" data-selection-control><input type="checkbox" data-select-note="${esc(r.id)}" aria-label="انتخاب ${esc(r.title)}" ${selectedIds.has(r.id)?'checked':''}><span>انتخاب</span></label>`;}
 function selectedNotes(){const visible=new Set(filtered().map(r=>r.id));return records.filter(r=>selectedIds.has(r.id)&&visible.has(r.id));}
-function bulkToolbar(){const count=selectedNotes().length;return `<div class="bulk-toolbar"><button class="textbtn" data-action="select-results">${icon('checksquare','sm')}انتخاب همهٔ نتایج (${fa(filtered().length)})</button>${count?`<strong>${fa(count)} مورد انتخاب شده</strong>${activeSection==='trash'?'<button class="btn small" data-action="bulk-restore">بازیابی منتخب‌ها</button>':`<button class="btn small" data-action="bulk-move">${icon('folder','sm')}انتقال گروهی</button><button class="btn small" data-action="bulk-status">تغییر وضعیت</button><button class="btn small" data-action="bulk-star">نشان کردن</button><button class="btn small danger-btn" data-action="bulk-delete">${icon('trash','sm')}حذف منتخب‌ها</button>`}<button class="textbtn" data-action="clear-selection">لغو انتخاب</button>`:''}</div>`;}
+function bulkToolbar(){const count=selectedNotes().length;return `<div class="bulk-toolbar"><button class="textbtn" data-action="select-results">${icon('checksquare','sm')}انتخاب همهٔ نتایج (${fa(filtered().length)})</button>${count?`<strong>${fa(count)} مورد انتخاب شده</strong>${activeSection==='trash'?'<button class="btn small" data-action="bulk-restore">بازیابی منتخب‌ها</button><button class="btn small danger-btn" data-action="bulk-purge">حذف</button>':`<button class="btn small" data-action="bulk-move">${icon('folder','sm')}انتقال گروهی</button><button class="btn small" data-action="bulk-status">تغییر وضعیت</button><button class="btn small" data-action="bulk-star">نشان کردن</button><button class="btn small danger-btn" data-action="bulk-delete">${icon('trash','sm')}حذف منتخب‌ها</button>`}<button class="textbtn" data-action="clear-selection">لغو انتخاب</button>`:''}</div>`;}
 function updateBulkToolbar(){const toolbar=document.getElementById('bulk-toolbar-container');if(toolbar)toolbar.innerHTML=bulkToolbar();}
 function openBulkAction(kind){const list=selectedNotes();if(!list.length)return;const count=fa(list.length);let fields='';
  if(kind==='move')fields=`<label class="field">حوزهٔ مقصد<select name="domain">${domains.map(d=>`<option value="${esc(d.id)}">${esc(d.name)}</option>`).join('')}</select></label><label class="field">مسیر پوشهٔ مقصد (اختیاری)<input name="folder" placeholder="خالی بگذارید تا مسیر فعلی حفظ شود"></label>`;
@@ -453,6 +457,18 @@ function applyBulk(kind,values={}){
  if(!store())return false;
  selectedIds.clear();return true;
 }
+function openPurgeNotes(ids){
+ const list=records.filter(r=>r.deleted&&ids.includes(r.id));if(!list.length)return;
+ pendingPurgeIds=list.map(r=>r.id);
+ openModal(`${modalHead('حذف یادداشت‌ها')}<form id="purge-notes-form"><p class="action-summary">${fa(list.length)} یادداشت از سطل آشغال پاک می‌شود. این موارد در همین مرورگر قابل بازیابی نخواهند بود و حذف به دستگاه‌های دیگر منتقل نمی‌شود.</p><div class="dialog-actions"><button class="btn" type="button" data-action="close">انصراف</button><button class="btn danger-btn" type="submit">${icon('trash','sm')}حذف</button></div></form>`,true);
+}
+function purgeNotes(ids){
+ const list=records.filter(r=>r.deleted&&ids.includes(r.id));if(!list.length)return false;
+ list.forEach(r=>purgedIds.add(r.id));
+ records=records.filter(r=>!purgedIds.has(r.id));
+ if(!store())return false;
+ selectedIds.clear();undoRecord=null;pendingPurgeIds=[];return true;
+}
 function noteSnapshot(r){return Object.fromEntries(['title','note','code','tags','language','url','domain','folder','project','type','status','date'].map(key=>[key,String(r[key]??'')]));}
 function normalizedHistory(value){return (Array.isArray(value)?value:[]).filter(v=>v&&typeof v.id==='string'&&v.snapshot&&typeof v.snapshot.title==='string').slice(-10).map(v=>({id:v.id,savedAt:String(v.savedAt||''),reason:String(v.reason||'ویرایش'),snapshot:noteSnapshot(v.snapshot)}));}
 function historyWithSnapshot(r,reason='ویرایش یادداشت'){return [...normalizedHistory(r.history),{id:uid(),savedAt:new Date().toISOString(),reason,snapshot:noteSnapshot(r)}].slice(-10);}
@@ -461,7 +477,7 @@ function showHistory(id){const r=records.find(r=>r.id===id);if(!r)return;const h
 function previewRevision(id,revisionId){const r=records.find(r=>r.id===id),v=normalizedHistory(r?.history).find(x=>x.id===revisionId);if(!v)return;openModal(`${modalHead('نسخهٔ قبلی: '+esc(v.snapshot.title))}<small class="muted">${esc(revisionDate(v.savedAt))}</small><div class="detail-body">${esc(v.snapshot.note)}</div>${v.snapshot.code?`<pre class="code-block">${esc(v.snapshot.code)}</pre>`:''}<div class="dialog-actions"><button class="btn" data-action="history" data-id="${esc(id)}">بازگشت به تاریخچه</button>${r.deleted?'':`<button class="btn primary" data-action="restore-revision" data-id="${esc(id)}" data-revision="${esc(revisionId)}">بازگردانی این نسخه</button>`}</div>`);}
 function restoreRevision(id,revisionId){const r=records.find(r=>r.id===id),v=normalizedHistory(r?.history).find(x=>x.id===revisionId);if(!r||r.deleted||!v)return false;const history=historyWithSnapshot(r,'پیش از بازیابی نسخه'),domain=domains.some(d=>d.id===v.snapshot.domain)?v.snapshot.domain:r.domain,type=typeNames[v.snapshot.type]?v.snapshot.type:r.type,status=statuses[v.snapshot.status]?v.snapshot.status:r.status;Object.assign(r,v.snapshot,{domain,type,status,history,updatedAt:new Date().toISOString()});delete r.domainTransfer;return store();}
 function duplicateNote(id){const r=records.find(r=>r.id===id);if(!r||r.deleted)return false;const copy={...cloneState(r),id:uid(),title:r.title+' (کپی)',date:today(),updatedAt:new Date().toISOString(),star:false,history:[]};delete copy.domainTransfer;records.unshift(copy);return store();}
-const advancedActions=['delete-domain','restore-domain','permanent-delete-domain','select-results','clear-selection','bulk-move','bulk-status','bulk-star','bulk-delete','bulk-restore','history','preview-revision','restore-revision','duplicate-note'];
+const advancedActions=['delete-domain','restore-domain','permanent-delete-domain','select-results','clear-selection','bulk-move','bulk-status','bulk-star','bulk-delete','bulk-restore','bulk-purge','purge-note','history','preview-revision','restore-revision','duplicate-note'];
 function advancedClick(action,data){
  switch(action){
  case 'delete-domain':return openDeleteDomain(data.id);
@@ -474,6 +490,8 @@ function advancedClick(action,data){
  case 'bulk-delete':return openBulkAction('delete');
  case 'bulk-star':if(applyBulk('star')){render();toast('یادداشت‌های منتخب نشان شدند.');}return;
  case 'bulk-restore':if(applyBulk('restore')){render();toast('یادداشت‌های منتخب بازیابی شدند.');}return;
+ case 'bulk-purge':return openPurgeNotes(selectedNotes().map(r=>r.id));
+ case 'purge-note':return openPurgeNotes([data.id]);
  case 'history':return showHistory(data.id);
  case 'preview-revision':return previewRevision(data.id,data.revision);
  case 'restore-revision':if(restoreRevision(data.id,data.revision)){closeModal();render();toast('نسخهٔ انتخاب‌شده بازیابی شد.');}return;
@@ -483,6 +501,11 @@ function advancedClick(action,data){
 document.addEventListener('submit',event=>{
  if(event.target.getAttribute('id')==='delete-domain-form'){event.preventDefault();const f=new FormData(event.target);if(archiveDomain(f.get('id'),f.get('target'))){closeModal();resetFilters();activeSection='folders';render();toast('حوزه کنار گذاشته شد؛ محتوا در حوزهٔ مقصد محفوظ است.');}}
  if(event.target.getAttribute('id')==='bulk-action-form'){event.preventDefault();const f=new FormData(event.target);if(applyBulk(f.get('kind'),{domain:f.get('domain'),folder:f.get('folder'),status:f.get('status')})){closeModal();render();toast('عملیات گروهی انجام شد.');}}
+});
+document.addEventListener('submit',event=>{
+ if(event.target.getAttribute('id')!=='purge-notes-form')return;
+ event.preventDefault();const count=pendingPurgeIds.length;
+ if(purgeNotes(pendingPurgeIds)){closeModal();render();toast(fa(count)+' یادداشت حذف شد.');}
 });
 document.addEventListener('change',event=>{if(event.target.dataset.selectNote){if(event.target.checked)selectedIds.add(event.target.dataset.selectNote);else selectedIds.delete(event.target.dataset.selectNote);updateBulkToolbar();}if(event.target.id==='sortFilter'){preferences.sort=event.target.value;if(store())refreshRecords();}});
 </script></body></html>
